@@ -3,6 +3,12 @@
 CaterEase is a catering management system that allows administrators to manage menu items and customers, track orders, and generate reports. It provides a user-friendly interface for both administrators and customers to interact with the catering service.
 ![image](https://github.com/gladyswambura/CaterEase/assets/97955649/04bda15e-bcbe-4774-a80f-422383721801)
 
+![image](https://github.com/gladyswambura/CaterEase/assets/97955649/4dfd3992-b543-4cf5-9001-39b9da0e100d)
+
+
+![image](https://github.com/gladyswambura/CaterEase/assets/97955649/f6cbac65-ff8f-489c-8185-1b35f34cfa99)
+
+
 ## Features
 
 - Admin Dashboard: A dashboard for administrators to view key metrics, manage menu items, track orders, and access various management features.
