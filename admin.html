@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Catering Management System</title>
+  <title>Admin Dashboard - CateEase</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-  <link rel="stylesheet" href="styles.css"> <!-- Custom CSS file -->
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -18,11 +18,14 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ml-auto">
         <li class="nav-item active">
+          <a class="nav-link" href="/">Home</a>
+        </li>
+        <li class="nav-item active">
           <a class="nav-link" href="./admin.html">Dashboard</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Menu Items</a>
-        </li>
+          <a class="btn btn-danger nav-link" href="./add-menu-item.html">Add Menu Item</a>
+        </li>        
         <!--more navigation items -->
       </ul>
     </div>
@@ -109,7 +112,7 @@
 
         <div id="menu" class="page">
           <h2>Menu Items</h2>
-          <!-- Add code for the menu items content -->
+          <div id="menuItems"></div>
         </div>
 
         <div id="orders" class="page">
