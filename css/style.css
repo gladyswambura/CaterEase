@@ -1,6 +1,5 @@
-/********** Template CSS **********/
 :root {
-    --primary: #FEA116;
+    --primary: #f27b22;
     --light: #F1F8FF;
     --dark: #0F172B;
 }
@@ -52,6 +51,7 @@
 .btn.btn-primary,
 .btn.btn-secondary {
     color: #FFFFFF;
+    background-color: #ff5252 !important;
 }
 
 .btn-square {
@@ -311,20 +311,6 @@ select.form-control {
 .form-control-sm:not(textarea) {
     height: 36px;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /*** Navbar ***/
 .navbar-dark .navbar-nav .nav-link {
     position: relative;
@@ -487,6 +473,15 @@ select.form-control {
     background-size: cover;
 }
 
+.card {
+    height: 100%;
+  }
+  
+  .card-img-top {
+    object-fit: cover;
+    height: 200px;
+  }
+  
 .video .btn-play {
     position: absolute;
     z-index: 3;
