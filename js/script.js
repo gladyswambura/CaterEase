@@ -1,6 +1,7 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-analytics.js";
-
+document.addEventListener('DOMContentLoaded', function() {
  const firebaseConfig = {
     apiKey: "AIzaSyDH55BakJobhTOPjsJnPbIwy6s_0qXY-54",
     authDomain: "foodie0001.firebaseapp.com",
@@ -15,7 +16,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
   const analytics = getAnalytics(app);
   firebase.initializeApp(firebaseConfig);
   let db = firebase.firestore();
+  let loginForm = document.getElementById('login-logout-btn');
+let registerForm = document.getElementById('register-form');
 
+// Get references to the input fields
+let emailInput = document.getElementById('email');
+let passwordInput = document.getElementById('password');
+let regEmailInput = document.getElementById('reg-email');
+let regPasswordInput = document.getElementById('reg-password');
+
+// Get references to the logout button
+let logoutBtn = document.getElementById('logout-btn');
+
+let addItemForm = document.getElementById('add-item-form');
   let itemsList = document.getElementById('items-list');
   db.collection('items').get()
   .then(function(querySnapshot) {
@@ -30,7 +43,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
           <div class="w-100 d-flex flex-column text-start ps-4">
             <h5 class="d-flex justify-content-between border-bottom pb-2">
               <span>${itemData.name}</span>
-              <span class="text-primary">Kes ${itemData.price}</span>
+              <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
             </h5>
             <small class="fst-italic">${itemData.details}</small>
           </div>
@@ -44,19 +57,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
   .catch(function(error) {
     console.error('Error fetching items:', error);
   });
-  let loginForm = document.getElementById('login-logout-btn');
-let registerForm = document.getElementById('register-form');
 
-// Get references to the input fields
-let emailInput = document.getElementById('email');
-let passwordInput = document.getElementById('password');
-let regEmailInput = document.getElementById('reg-email');
-let regPasswordInput = document.getElementById('reg-password');
-
-// Get references to the logout button
-let logoutBtn = document.getElementById('logout-btn');
-
-let addItemForm = document.getElementById('add-item-form');
 
 // Add an event listener to the form submit event
 addItemForm.addEventListener('submit', function(e) {
@@ -286,4 +287,4 @@ paypal.Buttons({
     }
   });
 
- 
+ });
