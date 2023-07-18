@@ -147,6 +147,7 @@ firebase.auth().onAuthStateChanged(function(user) {
     } else {
       // User is logged out
       // You can perform any necessary actions here
+      window.location.href = 'auth.html';
     }
   });
   
