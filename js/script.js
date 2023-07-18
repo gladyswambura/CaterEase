@@ -14,27 +14,92 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
   const app = initializeApp(firebaseConfig);
   const analytics = getAnalytics(app);
   firebase.initializeApp(firebaseConfig);
-  var db = firebase.firestore();
+  let db = firebase.firestore();
 
+  let itemsList = document.getElementById('items-list');
+  db.collection('items').get()
+  .then(function(querySnapshot) {
+    querySnapshot.forEach(function(doc) {
+      let itemData = doc.data();
+      // Create a new item element
+      var newItem = document.createElement('div');
+      newItem.className = 'col-lg-6';
+      newItem.innerHTML = `
+        <div class="d-flex align-items-center">
+          <img class="flex-shrink-0 img-fluid rounded" src="img/menu-7.jpg" alt="" style="width: 80px;">
+          <div class="w-100 d-flex flex-column text-start ps-4">
+            <h5 class="d-flex justify-content-between border-bottom pb-2">
+              <span>${itemData.name}</span>
+              <span class="text-primary">Kes ${itemData.price}</span>
+            </h5>
+            <small class="fst-italic">${itemData.details}</small>
+          </div>
+        </div>
+      `;
 
-  var loginForm = document.getElementById('login-logout-btn');
-var registerForm = document.getElementById('register-form');
+      // Append the new item to the items list
+      itemsList.appendChild(newItem);
+    });
+  })
+  .catch(function(error) {
+    console.error('Error fetching items:', error);
+  });
+  let loginForm = document.getElementById('login-logout-btn');
+let registerForm = document.getElementById('register-form');
 
 // Get references to the input fields
-var emailInput = document.getElementById('email');
-var passwordInput = document.getElementById('password');
-var regEmailInput = document.getElementById('reg-email');
-var regPasswordInput = document.getElementById('reg-password');
+let emailInput = document.getElementById('email');
+let passwordInput = document.getElementById('password');
+let regEmailInput = document.getElementById('reg-email');
+let regPasswordInput = document.getElementById('reg-password');
 
 // Get references to the logout button
-var logoutBtn = document.getElementById('logout-btn');
+let logoutBtn = document.getElementById('logout-btn');
 
+let addItemForm = document.getElementById('add-item-form');
+
+// Add an event listener to the form submit event
+addItemForm.addEventListener('submit', function(e) {
+  e.preventDefault(); // Prevent form submission
+
+  // Retrieve the values from the form input fields
+  let name = document.getElementById('namefood').value;
+  let price = document.getElementById('price').value;
+  let size = document.getElementById('size').value;
+  let image1 = document.getElementById('image1').value;
+  let image2 = document.getElementById('image2').value;
+  let details = document.getElementById('details').value;
+
+  // Create an object with the item details
+  let item = {
+    name: name,
+    price: price,
+    size: size,
+    image1: image1,
+    image2: image2,
+    details:details,
+  };
+
+  // Add the item to the Firestore collection
+  db.collection('items').add(item)
+    .then(function(docRef) {
+      // Handle successful addition
+     alert('Item added with ID:', docRef.id);
+
+      // Clear the form
+      addItemForm.reset();
+    })
+    .catch(function(error) {
+      // Handle errors
+      alert('Error adding item:', error);
+    });
+});
 // Add event listeners to the login and registration forms
 loginForm.addEventListener('submit', function(e) {
   e.preventDefault(); // Prevent form submission
 
-  var email = emailInput.value;
-  var password = passwordInput.value;
+  let email = emailInput.value;
+  let password = passwordInput.value;
 
   // Sign in the user with Firebase
   firebase.auth().signInWithEmailAndPassword(email, password)
@@ -55,8 +120,8 @@ loginForm.addEventListener('submit', function(e) {
 registerForm.addEventListener('submit', function(e) {
   e.preventDefault(); // Prevent form submission
 
-  var email = regEmailInput.value;
-  var password = regPasswordInput.value;
+  let email = regEmailInput.value;
+  let password = regPasswordInput.value;
 
   // Register the user with Firebase
   firebase.auth().createUserWithEmailAndPassword(email, password)
@@ -84,30 +149,31 @@ firebase.auth().onAuthStateChanged(function(user) {
     }
   });
   
+  
 
 // Add event listener to the logout button
-// logoutBtn.addEventListener('click', function() {
-//   // Sign out the user
-//   firebase.auth().signOut()
-//     .then(function() {
-//       // Handle successful logout
-//       alert('User logged out');
-//     })
-//     .catch(function(error) {
-//       // Handle errors
-//       alert('Logout error:', error.message);
-//     });
-// });
-var foodList = document.getElementById('food-list');
+logoutBtn.addEventListener('click', function() {
+  // Sign out the user
+  firebase.auth().signOut()
+    .then(function() {
+      // Handle successful logout
+      alert('User logged out');
+    })
+    .catch(function(error) {
+      // Handle errors
+      alert('Logout error:', error.message);
+    });
+});
+let foodList = document.getElementById('food-list');
 
 // Fetch food items from Firebase
 db.collection('foodItems').get()
   .then(function(querySnapshot) {
     querySnapshot.forEach(function(doc) {
-      var foodItem = doc.data().name;
+      let foodItem = doc.data().name;
 
       // Create a list item for each food item
-      var li = document.createElement('li');
+      let li = document.createElement('li');
       li.textContent = foodItem;
 
       // Add the list item to the food list
@@ -118,10 +184,10 @@ db.collection('foodItems').get()
     console.log('Error fetching food items:', error);
   });
 
-  var cartList = document.getElementById('cart-list');
+  let cartList = document.getElementById('cart-list');
 
 // Create an empty cart array to store the added items
-var cart = [];
+let cart = [];
 
 
 
@@ -132,7 +198,7 @@ function renderCartItems() {
 
   // Loop through the cart array and create a list item for each item
   cart.forEach(function(item) {
-    var li = document.createElement('td');
+    let li = document.createElement('td');
     li.textContent = item.name;
 
     cartList.appendChild(li);
@@ -152,10 +218,10 @@ function addItemToCart(item) {
 foodList.addEventListener('click', function(event) {
   if (event.target.tagName === 'LI') {
     // Get the text content of the clicked food item
-    var itemName = event.target.textContent;
+    let itemName = event.target.textContent;
 
     // Create an object representing the item
-    var item = {
+    let item = {
       name: itemName
       // Add more properties if needed (e.g., price, quantity, etc.)
     };
@@ -166,7 +232,7 @@ foodList.addEventListener('click', function(event) {
 });
 
 // Event listener for checkout button
-var checkoutBtn = document.getElementById('checkout-btn');
+let checkoutBtn = document.getElementById('checkout-btn');
 checkoutBtn.addEventListener('click', function() {
   // Perform checkout logic here
 });
@@ -200,7 +266,7 @@ paypal.Buttons({
     }
   }).render('#checkout-btn');
 
-  var loginLogoutBtn = document.getElementById('login-logout-btn');
+  let loginLogoutBtn = document.getElementById('login-logout-btn');
   firebase.auth().onAuthStateChanged(function(user) {
     if (user) {
       // User is logged in
@@ -219,3 +285,5 @@ paypal.Buttons({
       });
     }
   });
+
+ 
