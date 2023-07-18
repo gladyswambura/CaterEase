@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let loginForm = document.getElementById('login-logout-btn');
 let registerForm = document.getElementById('register-form');
 
+
 // Get references to the input fields
 let emailInput = document.getElementById('email');
 let passwordInput = document.getElementById('password');
@@ -46,6 +47,7 @@ let addItemForm = document.getElementById('add-item-form');
               <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
             </h5>
             <small class="fst-italic">${itemData.details}</small>
+            <button type='button' data-item-id="${itemData.id}" class="add-to-cart-btn btn btn-info">Add to Cart</button>
           </div>
         </div>
       `;
@@ -140,19 +142,9 @@ registerForm.addEventListener('submit', function(e) {
     });
 });
 
-firebase.auth().onAuthStateChanged(function(user) {
-    if (user) {
-      // User is logged in, redirect to index.html
-      window.location.href = 'index.html';
-    } else {
-      // User is logged out
-      // You can perform any necessary actions here
-      window.location.href = 'auth.html';
-    }
-  });
-  
-  
 
+  
+  
 // Add event listener to the logout button
 logoutBtn.addEventListener('click', function() {
   // Sign out the user
@@ -289,3 +281,43 @@ paypal.Buttons({
   });
 
  });
+
+
+
+ var addToCartLinks = document.querySelectorAll('.add-to-cart-btn');
+ addToCartLinks.forEach(function(link) {
+   link.addEventListener('click', function(event) {
+     event.preventDefault();
+ 
+     // Get the item ID from the data attribute
+     var itemId = link.dataset.itemId;
+ 
+     // Add the item to the cart collection
+     addToCart(itemId);
+   });
+ });
+ 
+
+ function addToCart(itemId) {
+  // Get the item details from Firestore using the itemId
+  db.collection('items').doc(itemId).get()
+    .then(function(doc) {
+      if (doc.exists) {
+        var itemData = doc.data();
+
+        // Store the item in the cart collection
+        db.collection('cart').add(itemData)
+          .then(function(docRef) {
+            console.log('Item added to cart with ID:', docRef.id);
+          })
+          .catch(function(error) {
+            console.error('Error adding item to cart:', error);
+          });
+      } else {
+        console.error('Item does not exist in Firestore');
+      }
+    })
+    .catch(function(error) {
+      console.error('Error retrieving item details:', error);
+    });
+}
