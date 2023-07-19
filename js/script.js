@@ -47,7 +47,7 @@ let addItemForm = document.getElementById('add-item-form');
               <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
             </h5>
             <small class="fst-italic">${itemData.details}</small>
-            <button type='button' data-item-id="${itemData.id}" class="add-to-cart-btn btn btn-info">Add to Cart</button>
+            <button typy='submit' class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${itemData}">Buy now</button>
           </div>
         </div>
       `;
@@ -68,6 +68,7 @@ addItemForm.addEventListener('submit', function(e) {
   // Retrieve the values from the form input fields
   let name = document.getElementById('namefood').value;
   let price = document.getElementById('price').value;
+  let code = document.getElementById('code').value;
   let size = document.getElementById('size').value;
   let image1 = document.getElementById('image1').value;
   let image2 = document.getElementById('image2').value;
@@ -78,6 +79,7 @@ addItemForm.addEventListener('submit', function(e) {
     name: name,
     price: price,
     size: size,
+    code:code,
     image1: image1,
     image2: image2,
     details:details,
@@ -87,7 +89,7 @@ addItemForm.addEventListener('submit', function(e) {
   db.collection('items').add(item)
     .then(function(docRef) {
       // Handle successful addition
-     alert('Item added with ID:', docRef.id);
+     alert('Item added to database', docRef.id);
 
       // Clear the form
       addItemForm.reset();
@@ -134,7 +136,7 @@ registerForm.addEventListener('submit', function(e) {
       regPasswordInput.value = '';
 
       // Handle successful registration
-      alert('User registered:', userCredential.user);
+      alert('User registered successfully. Logging you in', userCredential.user);
     })
     .catch(function(error) {
       // Handle errors
@@ -226,39 +228,59 @@ foodList.addEventListener('click', function(event) {
 });
 
 // Event listener for checkout button
-let checkoutBtn = document.getElementById('checkout-btn');
-checkoutBtn.addEventListener('click', function() {
-  // Perform checkout logic here
+var payNowButtons = document.querySelectorAll('.pay-now-btn');
+
+// Add a click event listener to each pay now button
+payNowButtons.forEach(function(button) {
+  button.addEventListener('click', function(event) {
+    event.preventDefault();
+
+    // Get the item ID from the data attribute
+    var itemId = button.dataset.itemId;
+
+    // Retrieve the item details from your existing item data source
+    var itemData = getItemDetails(itemId);
+
+    // Create the PayPal order
+    createPayPalOrder(itemData);
+  });
 });
 
-paypal.Buttons({
+// Function to retrieve item details from your existing item data source
+function getItemDetails(itemId) {
+  // Implement your logic to retrieve item details based on the itemId
+  // Return the item details object (e.g., { name: 'Item name', price: 10.99 })
+  // Alternatively, you can store the item details in a local data structure instead of fetching from Firestore
+}
+
+// Function to create a PayPal order
+function createPayPalOrder(itemData) {
+  var itemPrice = itemData.price;
+
+  // Create the order on PayPal
+  paypal.Buttons({
     createOrder: function(data, actions) {
-      // Create an order with the cart items
       return actions.order.create({
         purchase_units: [{
-          description: 'Food Order',
           amount: {
-            value: '10.00' // Replace with the total cart amount
+            value: itemPrice
           }
         }]
       });
     },
     onApprove: function(data, actions) {
-      // Capture the payment
+      // Capture the funds from the approved order
       return actions.order.capture().then(function(details) {
-        // Show a success message
-        alert('Payment successful! Transaction ID: ' + details.id);
-  
-        // Clear the cart
-        cart = [];
-        renderCartItems();
+        // Process the successful payment
+        console.log('Payment successful:', details);
       });
     },
-    onError: function(err) {
-      // Show an error message
-      console.error('Payment error:', err);
+    onError: function(error) {
+      // Handle errors during the checkout process
+      console.error('Error during checkout:', error);
     }
-  }).render('#checkout-btn');
+  }).render();
+}
 
   let loginLogoutBtn = document.getElementById('login-logout-btn');
   firebase.auth().onAuthStateChanged(function(user) {
@@ -283,41 +305,39 @@ paypal.Buttons({
  });
 
 
+//  var addToCartButtons = document.querySelectorAll('.col-lg-6');
 
- var addToCartLinks = document.querySelectorAll('.add-to-cart-btn');
- addToCartLinks.forEach(function(link) {
-   link.addEventListener('click', function(event) {
-     event.preventDefault();
- 
-     // Get the item ID from the data attribute
-     var itemId = link.dataset.itemId;
- 
-     // Add the item to the cart collection
-     addToCart(itemId);
-   });
- });
- 
+//  console.log(addToCartButtons)
+//  addToCartButtons.forEach(function(button) {
+//   button.addEventListener('click', function(event) {
+//     event.preventDefault();
 
- function addToCart(itemId) {
-  // Get the item details from Firestore using the itemId
-  db.collection('items').doc(itemId).get()
-    .then(function(doc) {
-      if (doc.exists) {
-        var itemData = doc.data();
+//     // Get the item ID from the data attribute
+//     var itemId = button.dataset.itemId;
 
-        // Store the item in the cart collection
-        db.collection('cart').add(itemData)
-          .then(function(docRef) {
-            console.log('Item added to cart with ID:', docRef.id);
-          })
-          .catch(function(error) {
-            console.error('Error adding item to cart:', error);
-          });
-      } else {
-        console.error('Item does not exist in Firestore');
-      }
-    })
-    .catch(function(error) {
-      console.error('Error retrieving item details:', error);
-    });
-}
+//     // Retrieve the cart items from local storage
+//     var cartItems = JSON.parse(localStorage.getItem('cartItems')) || [];
+
+//     // Check if the item is already in the cart
+//     var existingItem = cartItems.find(function(item) {
+//       return item.itemId === itemId;
+//     });
+
+//     if (existingItem) {
+//       // Item already exists in the cart
+//       console.log('Item already in cart:', existingItem);
+//     } else {
+//       // Add the item to the cart
+//       var newItem = {
+//         itemId: itemId,
+//         quantity: 1 // You can adjust the quantity as needed
+//       };
+//       cartItems.push(newItem);
+
+//       // Save the updated cart items to local storage
+//       localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+//       console.log('Item added to cart:', newItem);
+//     }
+//   });
+// });
