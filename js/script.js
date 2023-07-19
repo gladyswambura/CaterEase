@@ -35,6 +35,7 @@ let addItemForm = document.getElementById('add-item-form');
   .then(function(querySnapshot) {
     querySnapshot.forEach(function(doc) {
       let itemData = doc.data();
+      console.log(doc)
       // Create a new item element
       var newItem = document.createElement('div');
       newItem.className = 'col-lg-6';
@@ -47,7 +48,7 @@ let addItemForm = document.getElementById('add-item-form');
               <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
             </h5>
             <small class="fst-italic">${itemData.details}</small>
-            <button typy='submit' class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${itemData}">Buy now</button>
+            <button typy='submit' class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${doc.id}">Buy now</button>
           </div>
         </div>
       `;
