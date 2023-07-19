@@ -87,7 +87,7 @@ addItemForm.addEventListener('submit', function(e) {
   db.collection('items').add(item)
     .then(function(docRef) {
       // Handle successful addition
-     alert('Item added with ID:', docRef.id);
+     alert('Item added successfully, ID:', docRef.id);
 
       // Clear the form
       addItemForm.reset();
