@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let db = firebase.firestore();
   let loginForm = document.getElementById('login-logout-btn');
 let registerForm = document.getElementById('register-form');
-
+let globalJsonData = [];
 
 // Get references to the input fields
 let emailInput = document.getElementById('email');
@@ -31,37 +31,108 @@ let logoutBtn = document.getElementById('logout-btn');
 
 let addItemForm = document.getElementById('add-item-form');
   let itemsList = document.getElementById('items-list');
-  db.collection('items').get()
-  .then(function(querySnapshot) {
-    querySnapshot.forEach(function(doc) {
-      let itemData = doc.data();
-      console.log(doc)
-      // Create a new item element
-      var newItem = document.createElement('div');
-      newItem.className = 'col-lg-6';
-      newItem.innerHTML = `
+   async function getdata (){
+    await db.collection('items').get()
+    .then(function(querySnapshot) {
+      querySnapshot.forEach(function(doc) {
+        let itemData =  doc.data();
+        globalJsonData.push(itemData)
+        // Create a new item element
+        // var newItem = document.createElement('div');
+        // newItem.className = 'col-lg-6';
+        // newItem.innerHTML = `
+        //   <div class="d-flex align-items-center">
+        //     <img class="flex-shrink-0 img-fluid rounded" src="img/menu-7.jpg" alt="" style="width: 80px;">
+        //     <div class="w-100 d-flex flex-column text-start ps-4">
+        //       <h5 class="d-flex justify-content-between border-bottom pb-2">
+        //         <span>${itemData.name}</span>
+        //         <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
+        //       </h5>
+        //       <small class="fst-italic">${itemData.details}</small>
+        //       <button typy='submit' class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${doc.id}">Buy now</button>
+        //     </div>
+        //   </div>
+        // `;
+  
+        // // Append the new item to the items list
+        // itemsList.appendChild(newItem);
+        const categories =  [...new Set(globalJsonData.map((item) => {return item}))]
+  let i=0;
+  let newItem = document.createElement('div');
+  newItem.className = 'col-lg-6';
+  newItem.innerHTML = categories.map((item)=>{
+    var {name, code, price, size, image1, image2, details} = item
+    return (
+      `
         <div class="d-flex align-items-center">
           <img class="flex-shrink-0 img-fluid rounded" src="img/menu-7.jpg" alt="" style="width: 80px;">
           <div class="w-100 d-flex flex-column text-start ps-4">
             <h5 class="d-flex justify-content-between border-bottom pb-2">
-              <span>${itemData.name}</span>
-              <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
+              <span>${name}</span>
+              <p>Kes<span class="text-primary"> ${price}</span></p>
             </h5>
-            <small class="fst-italic">${itemData.details}</small>
-            <button typy='submit' class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${doc.id}">Buy now</button>
+            <small class="fst-italic">${details}</small>` + `
+            <button onclick=addtocart("+(i++)+") class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${code}">Buy now</button>` + `
           </div>
         </div>
-      `;
+      `
+    )
 
-      // Append the new item to the items list
-      itemsList.appendChild(newItem);
+
+  }).join('')
+  itemsList.appendChild(newItem);
+      });
+    })
+    .catch(function(error) {
+      console.error('Error fetching items:', error);
     });
-  })
-  .catch(function(error) {
-    console.error('Error fetching items:', error);
-  });
+   }
+getdata()
+var cart = []
 
+function addtocart(a){
+  cart.push({...categories[a]})
+  displaycart()
+}
+function displaycart(a){
+  let j=0
+  if (cart.length == 0){
+    document.getElementById('cartitem').innerHTML = "You don't have any items in your cart"
+  }
+  else{
+    document.getElementById('cartitem').innerHTML = cart.map((items) =>{
+      var {name, size, price, details, image1, image2, code} = items 
+      return (
+        `
+        <td>
+        <div class="product-item">
+            <a class="product-thumb" href="#"><img src="${image1}" alt="Product"></a>
+            <div class="product-info">
+                <h4 class="product-title"><a href="#">${name}</a></h4><span><em>Size:</em>${size}</span><span><em>Details:</em>${details}</span>
+            </div>
+        </div>
+    </td>
+    <td class="text-center">
+        <div class="count-input">
+            <select class="form-control">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+        </div>
+    </td>
+    <td class="text-center text-lg text-medium">${price}</td>
+    <td class="text-center"><a class="remove-from-cart" href="#" onclick='delElement("+ (j++) +")' data-toggle="tooltip" title="" data-original-title="Remove item"><i class="fa fa-trash"></i></a></td>
+        `
+      )
+    })
+  }
+}
+  console.log(globalJsonData);
 
+   
 // Add an event listener to the form submit event
 addItemForm.addEventListener('submit', function(e) {
   e.preventDefault(); // Prevent form submission
@@ -123,6 +194,32 @@ loginForm.addEventListener('submit', function(e) {
     });
 });
 
+
+
+
+// // Fetch data from Firestore collection and convert to JSON
+// db.collection("items").get()
+//   .then(function(querySnapshot) {
+//     var jsonData = [];
+//     querySnapshot.forEach(function(doc) {
+//       // Retrieve document fields as an object
+//       var docData = doc.data();
+
+//       // Add document data to the JSON array
+//       jsonData.push(docData);
+//     });
+
+//     // Assign JSON data to the global variable
+//     globalJsonData = jsonData;
+//   })
+//   .catch(function(error) {
+//     console.log("Error getting documents:", error);
+//   });
+
+// // Access the global JSON data elsewhere in your code
+
+
+
 registerForm.addEventListener('submit', function(e) {
   e.preventDefault(); // Prevent form submission
 
@@ -164,69 +261,6 @@ logoutBtn.addEventListener('click', function() {
 let foodList = document.getElementById('food-list');
 
 // Fetch food items from Firebase
-db.collection('foodItems').get()
-  .then(function(querySnapshot) {
-    querySnapshot.forEach(function(doc) {
-      let foodItem = doc.data().name;
-
-      // Create a list item for each food item
-      let li = document.createElement('li');
-      li.textContent = foodItem;
-
-      // Add the list item to the food list
-      foodList.appendChild(li);
-    });
-  })
-  .catch(function(error) {
-    console.log('Error fetching food items:', error);
-  });
-
-  let cartList = document.getElementById('cart-list');
-
-// Create an empty cart array to store the added items
-let cart = [];
-
-
-
-// Function to render the cart items dynamically
-function renderCartItems() {
-  // Clear the cart list before rendering the items
-  cartList.innerHTML = '';
-
-  // Loop through the cart array and create a list item for each item
-  cart.forEach(function(item) {
-    let li = document.createElement('td');
-    li.textContent = item.name;
-
-    cartList.appendChild(li);
-  });
-}
-
-// Function to handle adding an item to the cart
-function addItemToCart(item) {
-  // Add the item to the cart array
-  cart.push(item);
-
-  // Render the updated cart items
-  renderCartItems();
-}
-
-// Event listener for adding an item to the cart
-foodList.addEventListener('click', function(event) {
-  if (event.target.tagName === 'LI') {
-    // Get the text content of the clicked food item
-    let itemName = event.target.textContent;
-
-    // Create an object representing the item
-    let item = {
-      name: itemName
-      // Add more properties if needed (e.g., price, quantity, etc.)
-    };
-
-    // Add the item to the cart
-    addItemToCart(item);
-  }
-});
 
 // Event listener for checkout button
 var payNowButtons = document.querySelectorAll('.pay-now-btn');
