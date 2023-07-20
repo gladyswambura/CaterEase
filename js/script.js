@@ -101,6 +101,7 @@ document.addEventListener("click", function (event) {
               .set({ itemId: itemId })
               .then(() => {
                 alert("Item added to cart successfully!");
+                location.reload();
               })
               .catch((error) => {
                 alert("Error adding item to cart:", error);
@@ -174,7 +175,7 @@ function populateCartTable() {
     const nameCell = row.insertCell();
     nameCell.innerHTML = `
       <div class="product-item">
-        <a class="product-thumb" href="#"><img src="${itemData.imageUrl}" alt="Product"></a>
+        <a class="product-thumb" href="#"><img src="img/menu-7.jpg" alt="Product"></a>
         <div class="product-info">
           <h4 class="product-title"><a href="#">${itemData.name}</a></h4>
           <span><em>Description:</em> ${itemData.details}</span>
@@ -191,20 +192,23 @@ function populateCartTable() {
     const priceCell = row.insertCell();
     priceCell.classList.add("text-center", "text-lg", "text-medium");
     priceCell.textContent = `$${itemData.price}`;
-    const cartTotalElement = document.getElementById("cart-total");
-  cartTotalElement.textContent = `$${cartTotal.toFixed(2)}`;
-  const removeButtons = document.querySelectorAll(".remove-from-cart");
-  removeButtons.forEach((button) => {
-    button.addEventListener("click", (event) => {
-      event.preventDefault();
-      const itemId = event.target.dataset.itemId;
-      removeItemFromCart(itemId);
-    });
-  });
+   
     // Remove item cell
     const removeCell = row.insertCell();
     removeCell.classList.add("text-center");
-    removeCell.innerHTML = `<a class="remove-from-cart" href="#" data-toggle="tooltip" title="" data-original-title="Remove item"><i class="fa fa-trash"></i></a>`;
+    removeCell.innerHTML = `<a class="remove-from-cart" href="#" data-toggle="tooltip" title="" data-original-title="Remove item" data-item-id="${itemData.itemId}"><i class="fa fa-trash"></i></a>`;
+
+
+    const cartTotalElement = document.getElementById("cart-total");
+    cartTotalElement.textContent = `$${cartTotal.toFixed(2)}`;
+    const removeButtons = document.querySelectorAll(".remove-from-cart");
+    removeButtons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        const itemId = event.target.dataset.itemId;
+        removeItemFromCart(itemId);
+      });
+    });
   });
 }
 
