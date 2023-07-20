@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let loginForm = document.getElementById('login-logout-btn');
 let registerForm = document.getElementById('register-form');
 let globalJsonData = [];
+let cartItems = [];
 
 // Get references to the input fields
 let emailInput = document.getElementById('email');
@@ -36,51 +37,28 @@ let addItemForm = document.getElementById('add-item-form');
     .then(function(querySnapshot) {
       querySnapshot.forEach(function(doc) {
         let itemData =  doc.data();
+        itemData.itemId = doc.id
         globalJsonData.push(itemData)
         // Create a new item element
-        // var newItem = document.createElement('div');
-        // newItem.className = 'col-lg-6';
-        // newItem.innerHTML = `
-        //   <div class="d-flex align-items-center">
-        //     <img class="flex-shrink-0 img-fluid rounded" src="img/menu-7.jpg" alt="" style="width: 80px;">
-        //     <div class="w-100 d-flex flex-column text-start ps-4">
-        //       <h5 class="d-flex justify-content-between border-bottom pb-2">
-        //         <span>${itemData.name}</span>
-        //         <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
-        //       </h5>
-        //       <small class="fst-italic">${itemData.details}</small>
-        //       <button typy='submit' class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${doc.id}">Buy now</button>
-        //     </div>
-        //   </div>
-        // `;
-  
-        // // Append the new item to the items list
-        // itemsList.appendChild(newItem);
-        const categories =  [...new Set(globalJsonData.map((item) => {return item}))]
-  let i=0;
-  let newItem = document.createElement('div');
-  newItem.className = 'col-lg-6';
-  newItem.innerHTML = categories.map((item)=>{
-    var {name, code, price, size, image1, image2, details} = item
-    return (
-      `
-        <div class="d-flex align-items-center">
-          <img class="flex-shrink-0 img-fluid rounded" src="img/menu-7.jpg" alt="" style="width: 80px;">
-          <div class="w-100 d-flex flex-column text-start ps-4">
-            <h5 class="d-flex justify-content-between border-bottom pb-2">
-              <span>${name}</span>
-              <p>Kes<span class="text-primary"> ${price}</span></p>
-            </h5>
-            <small class="fst-italic">${details}</small>` + `
-            <button onclick=addtocart("+(i++)+") class="add-to-cart-btn pay-now-btn btn btn-info" data-item-id="${code}">Buy now</button>` + `
+        var newItem = document.createElement('div');
+        newItem.className = 'col-lg-6';
+        newItem.innerHTML = `
+          <div class="d-flex align-items-center">
+            <img class="flex-shrink-0 img-fluid rounded" src="img/menu-7.jpg" alt="" style="width: 80px;">
+            <div class="w-100 d-flex flex-column text-start ps-4">
+              <h5 class="d-flex justify-content-between border-bottom pb-2">
+                <span>${itemData.name}</span>
+                <p>Kes<span class="text-primary"> ${itemData.price}</span></p>
+              </h5>
+              <small class="fst-italic">${itemData.details}</small>
+              <button typy='submit' class="add-to-cart-btn  btn btn-info" data-item-id="${itemData.itemId}">Add to cart</button>
+            </div>
           </div>
-        </div>
-      `
-    )
+        `;
+  
+        // Append the new item to the items list
+        itemsList.appendChild(newItem);
 
-
-  }).join('')
-  itemsList.appendChild(newItem);
       });
     })
     .catch(function(error) {
@@ -90,10 +68,246 @@ let addItemForm = document.getElementById('add-item-form');
 getdata()
 var cart = []
 
-function addtocart(a){
-  cart.push({...categories[a]})
-  displaycart()
+
+
+
+
+
+document.addEventListener("click", function (event) {
+  if (event.target.classList.contains("add-to-cart-btn")) {
+    // Get the item ID from the data attribute
+    const itemId = event.target.dataset.itemId;
+
+    // Check if there is a logged-in user
+    const user = firebase.auth().currentUser;
+    if (user) {
+      // User is logged in, you can access the user's unique identifier using user.uid
+      const userId = user.uid;
+
+      // Reference to the cart collection for the current user
+      const cartRef = db.collection("users").doc(userId).collection("cart");
+
+      // Check if the item already exists in the user's cart
+      cartRef
+        .doc(itemId)
+        .get()
+        .then((doc) => {
+          if (doc.exists) {
+            alert("Item already in the cart.");
+          } else {
+            // Add the item to the user's cart collection in Firebase
+            cartRef
+              .doc(itemId)
+              .set({ itemId: itemId })
+              .then(() => {
+                alert("Item added to cart successfully!");
+              })
+              .catch((error) => {
+                alert("Error adding item to cart:", error);
+              });
+          }
+        })
+        .catch((error) => {
+          alert("Error checking item in cart:", error);
+        });
+    } else {
+      // User is not logged in, prompt them to log in or redirect to the login page
+      alert("Please log in to add items to your cart.");
+    }
+  }
+});
+
+
+
+
+
+async function getCartItems() {
+  const user = firebase.auth().currentUser;
+  if (user) {
+    const userId = user.uid;
+    const cartRef = db.collection("users").doc(userId).collection("cart");
+
+    try {
+      const querySnapshot = await cartRef.get();
+      cartItems = [];
+
+      // Fetch the item data using the itemId from the "items" collection
+      await Promise.all(querySnapshot.docs.map(async (doc) => {
+        const itemData = doc.data();
+        const itemId = doc.id;
+
+        // Fetch the actual item data from the "items" collection using the itemId
+        const itemRef = db.collection("items").doc(itemId);
+        const itemSnapshot = await itemRef.get();
+        if (itemSnapshot.exists) {
+          const item = itemSnapshot.data();
+
+          // Merge the itemData and item objects to get all the fields
+          const mergedData = { ...item, ...itemData, itemId: itemId };
+          cartItems.push(mergedData);
+        }
+      }));
+
+      // Call the function to populate the cart table
+      populateCartTable();
+    } catch (error) {
+      console.error("Error retrieving cart items:", error);
+    }
+  } else {
+    console.log("User not logged in. Cannot retrieve cart items.");
+  }
 }
+
+
+function populateCartTable() {
+  // Get the reference to the cart table body element in the HTML
+  const cartTableBody = document.getElementById("cart-items-body");
+
+  // Clear the table contents
+  cartTableBody.innerHTML = "";
+  let cartTotal = 0;
+  // Populate the table with cart items
+  cartItems.forEach((itemData) => {
+    const row = cartTableBody.insertRow();
+
+    // Product Name cell
+    const nameCell = row.insertCell();
+    nameCell.innerHTML = `
+      <div class="product-item">
+        <a class="product-thumb" href="#"><img src="${itemData.imageUrl}" alt="Product"></a>
+        <div class="product-info">
+          <h4 class="product-title"><a href="#">${itemData.name}</a></h4>
+          <span><em>Description:</em> ${itemData.details}</span>
+        </div>
+      </div>
+    `;
+    cartTotal += parseFloat(itemData.price);
+    // Size/Quantity cell
+    const sizeQuantityCell = row.insertCell();
+    sizeQuantityCell.classList.add("text-center", "text-lg", "text-medium");
+    sizeQuantityCell.textContent = `${itemData.size} kgs`;
+
+    // Price cell
+    const priceCell = row.insertCell();
+    priceCell.classList.add("text-center", "text-lg", "text-medium");
+    priceCell.textContent = `$${itemData.price}`;
+    const cartTotalElement = document.getElementById("cart-total");
+  cartTotalElement.textContent = `$${cartTotal.toFixed(2)}`;
+  const removeButtons = document.querySelectorAll(".remove-from-cart");
+  removeButtons.forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.preventDefault();
+      const itemId = event.target.dataset.itemId;
+      removeItemFromCart(itemId);
+    });
+  });
+    // Remove item cell
+    const removeCell = row.insertCell();
+    removeCell.classList.add("text-center");
+    removeCell.innerHTML = `<a class="remove-from-cart" href="#" data-toggle="tooltip" title="" data-original-title="Remove item"><i class="fa fa-trash"></i></a>`;
+  });
+}
+
+
+
+window.onload = function () {
+  getCartItems();
+};
+
+
+
+
+
+function removeItemFromCart(itemId) {
+  // Remove the item from the cartItems array
+  cartItems = cartItems.filter((item) => item.itemId !== itemId);
+  // After removing the item from the array, update the cart table
+  populateCartTable();
+
+  // Remove the item from Firestore
+  removeItemFromFirestore(itemId);
+}
+
+
+
+async function removeItemFromFirestore(itemId) {
+  const user = firebase.auth().currentUser;
+  if (user) {
+    const userId = user.uid;
+    const cartRef = db.collection("users").doc(userId).collection("cart");
+
+    try {
+      await cartRef.doc(itemId).delete();
+      alert("Item removed from cart successfully!");
+      location.reload();
+    } catch (error) {
+      alert("Error removing item from cart:", error);
+    }
+  } else {
+    console.log("User not logged in. Cannot remove item from Firestore.");
+  }
+}
+
+
+
+
+
+paypal.Buttons({
+  createOrder: function (data, actions) {
+    // This function is called when the button is clicked and should return an order ID to be used for the payment.
+    // Replace 'YOUR_ORDER_ID' with a unique identifier for the order, such as a timestamp or UUID.
+    return actions.order.create({
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "USD",
+            value: cartTotal.toFixed(2), // Use the actual calculated cart total as the payment amount
+          },
+        },
+      ],
+    });
+  },
+  onApprove: function (data, actions) {
+    // This function is called when the user approves the payment.
+    // You can perform additional actions here, such as saving the payment details in your database.
+    return actions.order.capture().then(function (details) {
+      // Successful payment capture.
+      console.log("Payment completed successfully!", details);
+      // Optionally, you can redirect the user to a success page or show a success message.
+    });
+  },
+  onError: function (error) {
+    // This function is called when an error occurs during the payment process.
+    console.error("Payment error:", error);
+    // Optionally, you can show an error message to the user.
+  },
+}).render("#paypal-button");
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function displaycart(a){
   let j=0
   if (cart.length == 0){
