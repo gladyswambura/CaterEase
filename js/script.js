@@ -157,7 +157,7 @@ async function getCartItems() {
     console.log("User not logged in. Cannot retrieve cart items.");
   }
 }
-
+let cartTotal = 0;
 
 function populateCartTable() {
   // Get the reference to the cart table body element in the HTML
@@ -165,7 +165,7 @@ function populateCartTable() {
 
   // Clear the table contents
   cartTableBody.innerHTML = "";
-  let cartTotal = 0;
+
   // Populate the table with cart items
   cartItems.forEach((itemData) => {
     const row = cartTableBody.insertRow();
@@ -272,7 +272,7 @@ paypal.Buttons({
     // You can perform additional actions here, such as saving the payment details in your database.
     return actions.order.capture().then(function (details) {
       // Successful payment capture.
-      console.log("Payment completed successfully!", details);
+      alert("Payment completed successfully!", details);
       // Optionally, you can redirect the user to a success page or show a success message.
     });
   },
@@ -281,7 +281,7 @@ paypal.Buttons({
     console.error("Payment error:", error);
     // Optionally, you can show an error message to the user.
   },
-}).render("#paypal-button");
+}).render("#paypal-button-container");
 
 
 
