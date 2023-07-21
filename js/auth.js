@@ -15,7 +15,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebas
   const analytics = getAnalytics(app);
   firebase.initializeApp(firebaseConfig);
   let db = firebase.firestore();
-  let loginForm = document.getElementById('login-logout-btn');
+  let loginForm = document.getElementById('login-form');
 let registerForm = document.getElementById('register-form');
 
 // Get references to the input fields
@@ -42,6 +42,7 @@ loginForm.addEventListener('submit', function(e) {
   
         // Handle successful login
         alert('User logged in:', userCredential.user);
+        window.location.href = 'index.html';
       })
       .catch(function(error) {
         // Handle errors
@@ -64,6 +65,7 @@ loginForm.addEventListener('submit', function(e) {
   
         // Handle successful registration
         alert('User registered:', userCredential.user);
+        window.location.href = 'index.html';
       })
       .catch(function(error) {
         // Handle errors
